@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بطل حفظ القرآن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Root variables for light and dark mode colors */
+        :root {
+            --primary-color: #4CAF50; /* Green */
+            --secondary-color: #81C784; /* Lighter Green */
+            --background-color: #e8f5e9; /* Very light green background */
+            --card-background: #f1f8e9; /* Off-white for cards */
+            --text-color: #333; /* Dark gray text */
+            --button-bg: #4CAF50; /* Button background */
+            --button-hover: #66bb6a; /* Button hover color */
+            --feedback-correct: #2e7d32; /* Dark green for correct feedback */
+            --feedback-wrong: #d32f2f; /* Red for wrong feedback */
+            --option-bg: #e0f2f7; /* Light blue for options */
+            --option-hover: #bbdefb; /* Lighter blue on hover */
+            --option-text: #212121; /* Dark text for options */
+            --border-color: #a7d9ef; /* Light blue border */
+        }
+
+        /* Dark mode specific variables */
+        body.dark-mode {
+            --primary-color: #1a237e; /* Darker blue */
+            --secondary-color: #3f51b5; /* Medium blue */
+            --background-color: #263238; /* Dark grey background */
+            --card-background: #455a64; /* Medium dark grey for cards */
+            --text-color: #e0e0e0; /* Light grey text */
+            --button-bg: #3f51b5; /* Dark mode button background */
+            --button-hover: #5c6bc0; /* Dark mode button hover color */
+            --feedback-correct: #a5d6a7; /* Light green for correct feedback in dark mode */
+            --feedback-wrong: #ef5350; /* Light red for wrong feedback in dark mode */
+            --option-bg: #546e7a; /* Darker blue-grey for options */
+            --option-hover: #78909c; /* Lighter blue-grey on hover */
+            --option-text: #e0e0e0; /* Light text for options */
+            --border-color: #607d8b; /* Medium blue-grey border */
+        }
+
+        /* Universal box-sizing for consistent layout */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Body styling for centering content and basic typography */
+        body {
+            font-family: 'Amiri', serif; /* Custom Arabic font */
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            direction: rtl; /* Right-to-left text direction for Arabic */
+            text-align: center;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for dark mode */
+        }
+
+        /* Main container styling for the game */
+        .container {
+            background-color: var(--card-background);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px; /* Max width for responsiveness */
+            width: 90%; /* Fluid width */
+            display: flex; /* Use flexbox for internal layout */
+            flex-direction: column; /* Stack children vertically */
+            align-items: center; /* Center items horizontally */
+        }
+
+        /* Header (game title) styling */
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2.5rem; /* Responsive font size */
+        }
+
+        /* Sub-headings styling */
+        h2 {
+            margin-bottom: 25px;
+            font-size: 2rem; /* Responsive font size */
+        }
+
+        /* Styling for different game screens */
+        .screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%; /* Take full width of container */
+        }
+
+        /* Utility class to hide elements */
+        .hidden {
+            display: none;
+        }
+
+        /* Styling for main interactive buttons (level selection, play again, return home) */
+        .level-btn, #play-again-btn, .return-home {
+            background-color: var(--button-bg);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px; /* Spacing between buttons */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+
+        /* Button hover effect */
+        .level-btn:hover, #play-again-btn:hover, .return-home:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
+        }
+
+        /* Game information section (score and night mode) */
+        .game-info {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        /* Night mode toggle switch styling */
+        .night-mode-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer; /* Indicate interactivity */
+        }
+
+        .night-mode-toggle input {
+            margin-right: 8px;
+            width: 20px; /* Adjust size for touch target */
+            height: 20px; /* Adjust size for touch target */
+            cursor: pointer;
+        }
+
+        /* Question card styling */
+        .question-card {
+            background-color: var(--background-color);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
+            width: 100%;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease; /* Smooth transition for dark mode */
+        }
+
+        /* Container for the verse and the audio button */
+        .verse-audio-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* Verse text styling */
+        #verse {
+            font-size: 1.8rem;
+            font-weight: bold;
+            line-height: 1.8; /* Improved readability for Arabic text */
+            margin: 0 10px;
+        }
+
+        /* Play audio button styling */
+        #play-audio-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-left: 10px;
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        #play-audio-btn:hover {
+            transform: scale(1.1);
+            color: var(--button-hover);
+        }
+
+        /* Container for multiple-choice options */
+        #options-container {
+            width: 100%;
+            display: grid; /* Use grid for layout */
+            grid-template-columns: 1fr; /* Single column by default */
+            gap: 15px; /* Space between option buttons */
+            margin-top: 20px;
+        }
+
+        /* Styling for individual option buttons */
+        .option-btn {
+            background-color: var(--option-bg);
+            color: var(--option-text);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            font-family: 'Amiri', serif; /* Apply Arabic font to options */
+        }
+
+        /* Option button hover effect */
+        .option-btn:not([disabled]):hover {
+            background-color: var(--option-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Styling for correct and incorrect answers */
+        .option-btn.correct {
+            background-color: var(--feedback-correct);
+            color: white;
+            border-color: var(--feedback-correct);
+        }
+
+        .option-btn.wrong {
+            background-color: var(--feedback-wrong);
+            color: white;
+            border-color: var(--feedback-wrong);
+        }
+
+        /* Disabled option buttons */
+        .option-btn[disabled] {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        /* Feedback message styling */
+        .feedback-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 40px; /* Ensure space even when empty */
+        }
+
+        /* Styling for "Next Question" button */
+        #next-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px; /* Space above next button */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #next-btn:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Styling for "Return Home" buttons (different color) */
+        .return-home {
+            background-color: #f44336; /* Red color */
+            margin-top: 15px;
+        }
+
+        /* Hover effect for "Return Home" buttons */
+        .return-home:hover {
+            background-color: #e57373; /* Lighter red on hover */
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+            h2 {
+                font-size: 1.6rem;
+            }
+            .level-btn, #play-again-btn, .return-home, #next-btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+            #verse {
+                font-size: 1.5rem;
+            }
+            .option-btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+            .feedback-message {
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            #options-container {
+                grid-template-columns: 1fr 1fr; /* Two columns on larger screens */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>بطل حفظ القرآن</h1>
+        </header>
+
+        <div id="level-selection" class="screen">
+            <h2>اختر المستوى</h2>
+            <button class="level-btn" data-level="easy">سهل</button>
+            <button class="level-btn" data-level="medium">متوسط</button>
+            <button class="level-btn" data-level="hard">صعب</button>
+        </div>
+
+        <div id="game-screen" class="screen hidden">
+            <div class="game-info">
+                <div class="score-display">النقاط: <span id="score">0</span></div>
+                <div class="night-mode-toggle">
+                    <input type="checkbox" id="night-mode-checkbox">
+                    <label for="night-mode-checkbox">الوضع الليلي 🌙</label>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <div class="verse-audio-container">
+                    <p id="verse"></p>
+                    <button id="play-audio-btn">🔊</button>
+                </div>
+                <div id="options-container">
+                    </div>
+            </div>
+
+            <div id="feedback" class="feedback-message"></div>
+            <button id="next-btn" class="hidden">التالي</button>
+            <button id="return-btn" class="return-home">العودة للصفحة الرئيسية</button>
+        </div>
+
+        <div id="end-screen" class="screen hidden">
+            <h2>لقد أنهيت المستوى!</h2>
+            <p>نقاطك النهائية: <span id="final-score">0</span></p>
+            <button id="play-again-btn">العب مرة أخرى</button>
+            <button id="home-from-end-btn" class="return-home">العودة للصفحة الرئيسية</button>
+        </div>
+    </div>
+
+    <script>
+        // Define the Quranic verses and their corresponding Surahs for each difficulty level.
+        const questions = {
+            easy: [
+                { verse: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", surah: "الفاتحة" },
+                { verse: "قُلْ هُوَ اللَّهُ أَحَدٌ", surah: "الإخلاص" },
+                { verse: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ", surah: "الفلق" },
+                { verse: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ", surah: "الناس" },
+                { verse: "تَبَّتْ يَدَا أَبِي لَهَبٍ وَتَبَّ", surah: "المسد" },
+                { verse: "إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ", surah: "النصر" },
+                { verse: "إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ", surah: "الكوثر" },
+                { verse: "أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ", surah: "الفيل" },
+                { verse: "لِإِيلَافِ قُرَيْشٍ", surah: "قريش" },
+                { verse: "أَرَأَيْتَ الَّذِي يُكَذِّبُ بِالدِّينِ", surah: "الماعون" },
+                { verse: "وَيْلٌ لِّكُلِّ هُمَزَةٍ لُّمَزَةٍ", surah: "الهمزة" },
+                { verse: "لَا أَعْبُدُ مَا تَعْبُدُونَ", surah: "الكافرون" },
+                { verse: "لَا أُقْسِمُ بِيَوْمِ الْقِيَامَةِ", surah: "القيامة" },
+                { verse: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", surah: "الفاتحة" },
+                { verse: "مَالِكِ يَوْمِ الدِّينِ", surah: "الفاتحة" },
+                { verse: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", surah: "الفاتحة" },
+                { verse: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ", surah: "الفاتحة" },
+                { verse: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا", surah: "الشرح" },
+                { verse: "وَاللَّيْلِ إِذَا عَسْعَسَ", surah: "التكوير" },
+                { verse: "إِذَا الشَّمْسُ كُوِّرَتْ", surah: "التكوير" },
+                { verse: "وَالسَّمَاءِ ذَاتِ الْبُرُوجِ", surah: "البروج" },
+                { verse: "فَأَمَّا الْيَتِيمَ فَلَا تَقْهَرْ", surah: "الضحى" },
+                { verse: "أَلَمْ نَشْرَحْ لَكَ صَدْرَكَ", surah: "الشرح" },
+                { verse: "اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ", surah: "العلق" },
+                { verse: "وَالْعَادِيَاتِ ضَبْحًا", surah: "العاديات" },
+            ],
+            medium: [
+                { verse: "إِنَّ اللَّهَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", surah: "البقرة" },
+                { verse: "إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ", surah: "الحجر" },
+                { verse: "وَلَا تَهِنُوا وَلَا تَحْزَنُوا وَأَنتُمُ الْأَعْلَوْنَ إِن كُنتُم مُّؤْمِنِينَ", surah: "آل عمران" },
+                { verse: "يَا أَيُّهَا الَّذِينَ آمَنُوا كُتِبَ عَلَيْكُمُ الصِّيَامُ", surah: "البقرة" },
+                { verse: "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا", surah: "الطلاق" },
+                { verse: "وَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ", surah: "القلم" },
+                { verse: "وَلَا تَقْرَبُوا الزِّنَا إِنَّهُ كَانَ فَاحِشَةً", surah: "الإسراء" },
+                { verse: "أَلَيْسَ اللَّهُ بِكَافٍ عَبْدَهُ", surah: "الزمر" },
+                { verse: "قُل لَّن يُصِيبَنَا إِلَّا مَا كَتَبَ اللَّهُ لَنَا", surah: "التوبة" },
+                { verse: "إِنَّمَا الْمُؤْمِنُونَ إِخْوَةٌ", surah: "الحجرات" },
+                { verse: "يَا أَيُّهَا الَّذِينَ آمَنُوا اجْتَنِبُوا كَثِيرًا مِّنَ الظَّنِّ", surah: "الحجرات" },
+                { verse: "يَا أَيُّهَا النَّاسُ إِنَّا خَلَقْنَاكُم مِّن ذَكَرٍ وَأُنثَىٰ", surah: "الحجرات" },
+                { verse: "وَمَا كَانَ اللَّهُ لِيُعَذِّبَهُمْ وَأَنتَ فِيهِمْ", surah: "الأنفال" },
+                { verse: "هُوَ اللَّهُ الَّذِي لَا إِلَٰهَ إِلَّا هُوَ", surah: "الحشر" },
+                { verse: "إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ", surah: "الأحزاب" },
+                { verse: "إِنَّ اللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّىٰ يُغَيِّرُوا مَا بِأَنفُسِهِمْ", surah: "الرعد" },
+                { verse: "يَا أَيُّهَا النَّاسُ اتَّقُوا رَبَّكُمُ الَّذِي خَلَقَكُم مِّن نَّفْسٍ وَاحِدَةٍ", surah: "النساء" },
+                { verse: "وَأَن لَّيْسَ لِلْإِنسَانِ إِلَّا مَا سَعَىٰ", surah: "النجم" },
+                { verse: "وَالْعَصْرِ", surah: "العصر" },
+                { verse: "إِنَّا فَتَحْنَا لَكَ فَتْحًا مُّبِينًا", surah: "الفتح" },
+                { verse: "وَمَا أَرْسَلْنَاكَ إِلَّا رَحْمَةً لِّلْعَالَمِينَ", surah: "الأنبياء" },
+                { verse: "وَكَانَ اللَّهُ غَفُورًا رَّحِيمًا", surah: "النساء" },
+                { verse: "أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ", surah: "الرعد" },
+                { verse: "لَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ", surah: "إبراهيم" },
+                { verse: "كُلُّ نَفْسٍ ذَائِقَةُ الْمَوْتِ", surah: "آل عمران" },
+                { verse: "وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ", surah: "الذاريات" }
+            ],
+            hard: [
+                { verse: "إِنَّ اللَّهَ اشْتَرَىٰ مِنَ الْمُؤْمِنِينَ أَنفُسَهُمْ وَأَمْوَالَهُم بِأَنَّ لَهُمُ الْجَنَّةَ", surah: "التوبة" },
+                { verse: "وَمَا أَنزَلْنَا عَلَىٰ عَبْدِنَا يَوْمَ الْفُرْقَانِ يَوْمَ الْتَقَى الْجَمْعَانِ", surah: "الأنفال" },
+                { verse: "الْيَوْمَ أَكْمَلْتُ لَكُمْ دِينَكُمْ وَأَتْمَمْتُ عَلَيْكُمْ نِعْمَتِي وَرَضِيتُ لَكُمُ الْإِسْلَامَ دِينًا", surah: "المائدة" },
+                { verse: "وَأَذِّن فِي النَّاسِ بِالْحَجِّ يَأْتُوكَ رِجَالًا وَعَلَىٰ كُلِّ ضَامِرٍ", surah: "الحج" },
+                { verse: "وَمَا لَكُمْ لَا تُقَاتِلُونَ فِي سَبِيلِ اللَّهِ وَالْمُسْتَضْعَفِينَ مِنَ الرِّجَالِ وَالنِّسَاءِ وَالْوِلْدَانِ", surah: "النساء" },
+                { verse: "وَقَالَ ارْكَبُوا فِيهَا بِسْمِ اللَّهِ مَجْرَاهَا وَمُرْسَاهَا", surah: "هود" },
+                { verse: "وَمَا أَرْسَلْنَا مِن قَبْلِكَ مِن رَّسُولٍ وَلَا نَبِيٍّ إِلَّا إِذَا تَمَنَّىٰ", surah: "الحج" },
+                { verse: "يَا أَيُّهَا الَّذِينَ آمَنُوا إِنَّمَا الْخَمْرُ وَالْمَيْسِرُ وَالْأَنصَابُ وَالْأَزْلَامُ رِجْسٌ مِّنْ عَمَلِ الشَّيْطَانِ", surah: "المائدة" },
+                { verse: "إِنَّ اللَّهَ وَمَلَائِكَتَهُ يُصَلُّونَ عَلَى النَّبِيِّ ۚ يَا أَيُّهَا الَّذِينَ آمَنُوا صَلُّوا عَلَيْهِ وَسَلِّمُوا تَسْلِيمًا", surah: "الأحزاب" },
+                { verse: "إِنَّ فِي خَلْقِ السَّمَاوَاتِ وَالْأَرْضِ وَاخْتِلَافِ اللَّيْلِ وَالنَّهَارِ لَآيَاتٍ لِّأُولِي الْأَلْبَابِ", surah: "آل عمران" },
+                { verse: "لَقَدْ كَانَ لَكُمْ فِي رَسُولِ اللَّهِ أُسْوَةٌ حَسَنَةٌ لِّمَن كَانَ يَرْجُو اللَّهَ وَالْيَوْمَ الْآخِرَ", surah: "الأحزاب" },
+                { verse: "وَمَا كَانَ صَلَاتُهُمْ عِندَ الْبَيْتِ إِلَّا مُكَاءً وَتَصْدِيَةً", surah: "الأنفال" },
+                { verse: "وَالَّذِينَ جَاءُوا مِن بَعْدِهِمْ يَقُولُونَ رَبَّنَا اغْفِرْ لَنَا وَلِإِخْوَانِنَا الَّذِينَ سَبَقُونَا بِالْإِيمَانِ", surah: "الحشر" },
+                { verse: "فَإِنَّ مَعَ الْعُسْرِ يُسْرًا", surah: "الشرح" },
+                { verse: "إِنَّا لِلَّهِ وَإِنَّا إِلَيْهِ رَاجِعُونَ", surah: "البقرة" },
+                { verse: "وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ", surah: "البقرة" },
+                { verse: "لَا يُكَلِّفُ اللَّهُ نَفْسًا إِلَّا وُسْعَهَا", surah: "البقرة" },
+                { verse: "آمَنَ الرَّسُولُ بِمَا أُنزِلَ إِلَيْهِ مِن رَّبِّهِ وَالْمُؤْمِنُونَ", surah: "البقرة" },
+                { verse: "لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ", surah: "البقرة" },
+                { verse: "وَلَا تُفْسِدُوا فِي الْأَرْضِ بَعْدَ إِصْلَاحِهَا", surah: "الأعراف" },
+                { verse: "إِنَّا نَحْنُ نَزَّلْنَا الذِّكْرَ وَإِنَّا لَهُ لَحَافِظُونَ", surah: "الحجر" },
+                { verse: "هُوَ الَّذِي يُصَوِّرُكُمْ فِي الْأَرْحَامِ كَيْفَ يَشَاءُ", surah: "آل عمران" },
+                { verse: "مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ", surah: "البقرة" },
+                { verse: "وَلَا يَأْبَ الشُّهَدَاءُ إِذَا مَا دُعُوا", surah: "البقرة" },
+                { verse: "لَنْ تَنَالُوا الْبِرَّ حَتَّىٰ تُنْفِقُوا مِمَّا تُحِبُّونَ", surah: "آل عمران" },
+                { verse: "وَلَا تَحْسَبَنَّ اللَّهَ غَافِلًا عَمَّا يَعْمَلُ الظَّالِمُونَ", surah: "إبراهيم" }
+            ]
+        };
+
+        // Extract all unique Surah names to use as incorrect options
+        const allSurahs = new Set();
+        for (const level in questions) {
+            questions[level].forEach(q => allSurahs.add(q.surah));
+        }
+        const allSurahsArray = Array.from(allSurahs);
+
+        // Get references to DOM elements
+        const levelSelectionScreen = document.getElementById('level-selection');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const levelButtons = document.querySelectorAll('.level-btn');
+        const verseDisplay = document.getElementById('verse');
+        const optionsContainer = document.getElementById('options-container'); // Element for options
+        const nextBtn = document.getElementById('next-btn');
+        const scoreDisplay = document.getElementById('score');
+        const feedbackDisplay = document.getElementById('feedback');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const nightModeToggle = document.getElementById('night-mode-checkbox');
+        const returnHomeBtns = document.querySelectorAll('.return-home');
+        const playAudioBtn = document.getElementById('play-audio-btn');
+
+        // Game state variables
+        let currentLevelQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Check for Web Speech API support and get Arabic voice
+        const synth = window.speechSynthesis;
+        let arabicVoice = null;
+        if (synth) {
+            synth.onvoiceschanged = () => {
+                arabicVoice = synth.getVoices().find(voice => voice.lang.startsWith('ar-') || voice.name.includes('Arabic'));
+            };
+        }
+
+        /**
+         * Hides all screens and shows the specified screen.
+         * @param {string} screenId The ID of the screen to show.
+         */
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        /**
+         * Shuffles an array in place using the Fisher-Yates (Knuth) algorithm.
+         * @param {Array} array The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array; // Return the shuffled array
+        }
+
+        /**
+         * Generates a set of unique incorrect Surah names for multiple-choice options.
+         * @param {string} correctSurah The correct Surah name to exclude from incorrect options.
+         * @param {number} count The number of incorrect options to generate.
+         * @returns {Array<string>} An array of unique incorrect Surah names.
+         */
+        function generateIncorrectOptions(correctSurah, count) {
+            const incorrectOptions = new Set();
+            while (incorrectOptions.size < count) {
+                const randomIndex = Math.floor(Math.random() * allSurahsArray.length);
+                const randomSurah = allSurahsArray[randomIndex];
+                if (randomSurah !== correctSurah && !incorrectOptions.has(randomSurah)) {
+                    incorrectOptions.add(randomSurah);
+                }
+            }
+            return Array.from(incorrectOptions);
+        }
+
+        /**
+         * Initializes and starts the game for a chosen level.
+         * @param {string} level The difficulty level ('easy', 'medium', 'hard').
+         */
+        function startGame(level) {
+            // Copy and shuffle questions for the current level
+            currentLevelQuestions = [...questions[level]];
+            shuffleArray(currentLevelQuestions);
+            currentQuestionIndex = 0;
+            score = 0;
+            updateScore(); // Reset and update score display
+            showScreen('game-screen'); // Show the game screen
+            loadQuestion(); // Load the first question
+        }
+
+        /**
+         * Loads and displays the current question with multiple-choice options.
+         * If all questions are answered, ends the game.
+         */
+        function loadQuestion() {
+            if (currentQuestionIndex < currentLevelQuestions.length) {
+                const question = currentLevelQuestions[currentQuestionIndex];
+                verseDisplay.textContent = question.verse; // Display the Quranic verse
+                
+                optionsContainer.innerHTML = ''; // Clear previous options
+                feedbackDisplay.textContent = ''; // Clear feedback message
+                feedbackDisplay.classList.remove('correct', 'wrong'); // Remove feedback styling
+                nextBtn.classList.add('hidden'); // Hide next button
+                
+                const correctSurah = question.surah;
+                const incorrectOptions = generateIncorrectOptions(correctSurah, 3); // Generate 3 incorrect options
+                const allOptions = shuffleArray([correctSurah, ...incorrectOptions]); // Combine and shuffle all options
+
+                allOptions.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('option-btn');
+                    button.dataset.surah = option; // Store the Surah name in a data attribute
+                    button.addEventListener('click', () => checkAnswer(button, correctSurah)); // Add click listener
+                    optionsContainer.appendChild(button);
+                });
+
+            } else {
+                endGame(); // No more questions, end the game
+            }
+        }
+
+        /**
+         * Function to handle text-to-speech
+         * @param {string} verseText The text of the verse to speak.
+         */
+        function speakVerse(verseText) {
+            if ('speechSynthesis' in window) {
+                synth.cancel(); // Stop any ongoing speech synthesis
+                const utterance = new SpeechSynthesisUtterance(verseText);
+                utterance.lang = 'ar-SA'; // Set the language to Arabic
+
+                // Use a found Arabic voice if available
+                if (arabicVoice) {
+                    utterance.voice = arabicVoice;
+                }
+                
+                synth.speak(utterance);
+            } else {
+                alert('عذراً، متصفحك لا يدعم خاصية تحويل النص إلى كلام.');
+            }
+        }
+
+        /**
+         * Checks the user's selected answer against the correct one.
+         * @param {HTMLButtonElement} selectedButton The button element clicked by the user.
+         * @param {string} correctSurah The correct Surah name for the current question.
+         */
+        function checkAnswer(selectedButton, correctSurah) {
+            const userAnswer = selectedButton.dataset.surah; // Get the Surah name from the clicked button
+            synth.cancel(); // Stop the audio when the user answers
+
+            // Disable all option buttons after an answer is chosen
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.disabled = true; // Disable the button to prevent multiple clicks
+                if (btn.dataset.surah === correctSurah) {
+                    btn.classList.add('correct'); // Highlight the correct answer
+                }
+            });
+
+            if (userAnswer === correctSurah) {
+                score += 10; // Award points for correct answer
+                feedbackDisplay.textContent = 'أحسنت! إجابة صحيحة 🎉'; // Correct feedback message
+                feedbackDisplay.classList.add('correct');
+                feedbackDisplay.classList.remove('wrong'); // Ensure wrong class is removed
+            } else {
+                feedbackDisplay.textContent = 'حاول مرة أخرى 😄'; // Wrong feedback message
+                feedbackDisplay.classList.add('wrong');
+                feedbackDisplay.classList.remove('correct'); // Ensure correct class is removed
+                selectedButton.classList.add('wrong'); // Highlight the wrong answer chosen by user
+            }
+
+            updateScore(); // Update score display
+            nextBtn.classList.remove('hidden'); // Show next button to proceed
+        }
+
+        /**
+         * Advances to the next question.
+         */
+        function nextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion();
+        }
+
+        /**
+         * Ends the current game session, displays final score, and shows the end screen.
+         */
+        function endGame() {
+            finalScoreDisplay.textContent = score; // Display final score
+            showScreen('end-screen'); // Show the end game screen
+        }
+
+        /**
+         * Updates the score display on the game screen.
+         */
+        function updateScore() {
+            scoreDisplay.textContent = score;
+        }
+
+        // --- Event Listeners ---
+
+        // Event listener for level selection buttons
+        levelButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const level = e.target.dataset.level; // Get the chosen level from data attribute
+                startGame(level); // Start the game with the selected level
+            });
+        });
+
+        // Event listener for the "Next" button
+        nextBtn.addEventListener('click', nextQuestion);
+
+        // Event listener for the "Play Again" button on the end screen
+        playAgainBtn.addEventListener('click', () => {
+            showScreen('level-selection'); // Go back to level selection to play again
+        });
+
+        // Event listener for the night mode toggle checkbox
+        nightModeToggle.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode', nightModeToggle.checked);
+        });
+
+        // Event listeners for "Return to Home" buttons
+        returnHomeBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                showScreen('level-selection'); // Go back to the main level selection screen
+            });
+        });
+
+        // Event listener for the audio button
+        playAudioBtn.addEventListener('click', () => {
+            const verse = verseDisplay.textContent;
+            if (verse) {
+                speakVerse(verse);
+            }
+        });
+    </script>
+</body>
+</html>
